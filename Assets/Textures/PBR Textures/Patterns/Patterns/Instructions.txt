@@ -1,0 +1,1 @@
+Use patterns to drive the alpha of your mix nodes between two shaders in whatever render engine you use. 
