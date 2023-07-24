@@ -16,8 +16,7 @@ PrefabInstance:
         type: 3}
       propertyPath: serializationData.Prefab
       value: 
-      objectReference: {fileID: 5486603097085075774, guid: b9ec314c11ef60e4eaea13eabde0bf9e,
-        type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 5660506809119767901, guid: b9ec314c11ef60e4eaea13eabde0bf9e,
         type: 3}
       propertyPath: m_RootOrder
@@ -38,5 +37,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5868788546295830920, guid: b9ec314c11ef60e4eaea13eabde0bf9e,
+        type: 3}
+      propertyPath: serializedProgramAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: f7b16ec699783ff44be536f7c6142221,
+        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b9ec314c11ef60e4eaea13eabde0bf9e, type: 3}
