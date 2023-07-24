@@ -1,0 +1,5 @@
+Ingest: rtmp://ingest.vrcdn.live/live
+Key: d4e45b0a9376546
+
+rtspt://stream.vrcdn.live/live/tailbass
+https://stream.vrcdn.live/live/tailbass.live.ts
