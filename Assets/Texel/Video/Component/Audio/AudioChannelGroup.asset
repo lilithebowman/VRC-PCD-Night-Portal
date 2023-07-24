@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: AudioChannelGroup
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 03641eb1f5347b04091cf305905ba955,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: b521ddcfa1b10a942aa87fb501c7e1b4,
     type: 2}
   udonAssembly: 
   assemblyError: 

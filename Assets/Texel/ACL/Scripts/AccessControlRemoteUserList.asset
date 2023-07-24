@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: AccessControlRemoteUserList
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: ad0e93a52d4e03947b82f3190bbefc5b,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 6f4e4744e2164cd419a0a9d9f1c1d608,
     type: 2}
   udonAssembly: 
   assemblyError: 

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: LocalControlsSlim
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: a0ec141066a120745815d547f3f095fe,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: d8445a5a896806b42b9476aa4eee99ad,
     type: 2}
   udonAssembly: 
   assemblyError: 

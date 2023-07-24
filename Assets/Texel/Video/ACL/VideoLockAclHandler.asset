@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: VideoLockAclHandler
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 4d0c0ea762ec507469c363e70f26d324,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: bfdb9191d3c169042bed5fecc8dc767e,
     type: 2}
   udonAssembly: 
   assemblyError: 
