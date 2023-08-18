@@ -2469,10 +2469,50 @@ PrefabInstance:
         type: 3}
     - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
         type: 3}
+      propertyPath: debugLog
+      value: 
+      objectReference: {fileID: 1466895356}
+    - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
+        type: 3}
+      propertyPath: debugState
+      value: 
+      objectReference: {fileID: 110864628}
+    - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
+        type: 3}
       propertyPath: serializationData.Prefab
       value: 
       objectReference: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
         type: 3}
+    - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
+        type: 3}
+      propertyPath: userWhitelist.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
+        type: 3}
+      propertyPath: userWhitelist.Array.data[0]
+      value: Lilithe Lotor
+      objectReference: {fileID: 0}
+    - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
+        type: 3}
+      propertyPath: userWhitelist.Array.data[1]
+      value: PortalCrowd
+      objectReference: {fileID: 0}
+    - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
+        type: 3}
+      propertyPath: userWhitelist.Array.data[2]
+      value: Commander A9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
+        type: 3}
+      propertyPath: userWhitelist.Array.data[3]
+      value: TJCoyote
+      objectReference: {fileID: 0}
+    - target: {fileID: 3648632802258670924, guid: d7218b959c7ab2c4eba150c258e4a722,
+        type: 3}
+      propertyPath: userWhitelist.Array.data[4]
+      value: Georninja
+      objectReference: {fileID: 0}
     - target: {fileID: 3712254756323567156, guid: d7218b959c7ab2c4eba150c258e4a722,
         type: 3}
       propertyPath: serializationData.Prefab
