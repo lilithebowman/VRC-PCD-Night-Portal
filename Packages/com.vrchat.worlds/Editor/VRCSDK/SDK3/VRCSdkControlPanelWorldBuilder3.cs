@@ -10,6 +10,7 @@ using VRC.Editor;
 using VRC.SDK3.Editor;
 using VRC.SDKBase.Editor;
 using VRC.SDKBase.Editor.BuildPipeline;
+using VRC.SDKBase.Editor.V3;
 using VRC.Udon;
 using VRC.Udon.Common.Interfaces;
 using Object = UnityEngine.Object;
@@ -88,7 +89,7 @@ namespace VRC.SDK3.Editor
 
         public override void OnGUIScene()
         {
-                 GUILayout.Label("", VRCSdkControlPanel.scrollViewSeparatorStyle);
+            GUILayout.Label("", VRCSdkControlPanel.scrollViewSeparatorStyle);
 
             _builderScrollPos = GUILayout.BeginScrollView(_builderScrollPos, false, false, GUIStyle.none,
                 GUI.skin.verticalScrollbar, GUILayout.Width(VRCSdkControlPanel.SdkWindowWidth),
@@ -191,14 +192,14 @@ namespace VRC.SDK3.Editor
             EditorGUI.EndDisabledGroup();
 #endif
 
+            if (Event.current.type == EventType.Used)
+                return;
+            
             GUILayout.EndVertical();
 
-            if (Event.current.type != EventType.Used)
-            {
-                GUILayout.EndHorizontal();
-                EditorGUILayout.Space();
-                GUILayout.EndVertical();
-            }
+            GUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+            GUILayout.EndVertical();
 
             EditorGUILayout.Space();
 
@@ -259,11 +260,34 @@ namespace VRC.SDK3.Editor
             }
 
             GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+            GUILayout.EndVertical();
             GUI.enabled = true;
 
-            if (Event.current.type == EventType.Used) return;
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
+            void OnV3Export()
+            {
+                bool uploadBlocked = !VRCBuildPipelineCallbacks.OnVRCSDKBuildRequested(VRCSDKRequestedBuildType.Scene);
+                if (!uploadBlocked)
+                {
+                    if (Core.APIUser.CurrentUser.canPublishWorlds)
+                    {
+                        EnvConfig.ConfigurePlayerSettings();
+                        EditorPrefs.SetBool("VRC.SDKBase_StripAllShaders", false);
+                        
+					VRC_SdkBuilder.shouldBuildUnityPackage = false;
+                        VRC_SdkBuilder.PreBuildBehaviourPackaging();
+                        VRC_SdkBuilder.ExportSceneToV3();
+                    }
+                    else
+                    {
+                        VRCSdkControlPanel.ShowContentPublishPermissionsDialog();
+                    }
+                }
+            }
+            
+            V3SdkUI.DrawV3UI(() => _builder.NoGuiErrorsOrIssues(), OnV3Export, VRCSdkControlPanel.boxGuiStyle, VRCSdkControlPanel.infoGuiStyle, VRCSdkControlPanel.SdkWindowWidth);
+
             GUILayout.EndScrollView();
         }
 
