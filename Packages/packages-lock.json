@@ -1,5 +1,47 @@
 {
   "dependencies": {
+    "com.llealloo.audiolink": {
+      "version": "file:com.llealloo.audiolink",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.texelsaur.access": {
+      "version": "file:com.texelsaur.access",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.texelsaur.common": {
+      "version": "file:com.texelsaur.common",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.texelsaur.misc": {
+      "version": "file:com.texelsaur.misc",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.texelsaur.playeraudio": {
+      "version": "file:com.texelsaur.playeraudio",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.texelsaur.portal": {
+      "version": "file:com.texelsaur.portal",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.texelsaur.video": {
+      "version": "file:com.texelsaur.video",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.ai.navigation": {
       "version": "1.1.4",
       "depth": 0,
