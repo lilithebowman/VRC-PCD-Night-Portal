@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: TranslationTable
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: c792247de43f62e4baddfb8607e59b08,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: c9eab057196f0f94b9a75ae24b307129,
     type: 2}
   udonAssembly: 
   assemblyError: 

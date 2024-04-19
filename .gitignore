@@ -31,3 +31,4 @@ sysinfo.txt
 West Inn.unitypackage
 Hotel Lobby.unitypackage
 *.log
+/Assets/SerializedUdonPrograms

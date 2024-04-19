@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: AccessKeypad
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 8515b9d7ba3ecea4c93d791daba57220,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 70c3fa0523e5a8846b05a37d78d88138,
     type: 2}
   udonAssembly: 
   assemblyError: 

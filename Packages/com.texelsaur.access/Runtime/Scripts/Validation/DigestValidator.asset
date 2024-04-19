@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: DigestValidator
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 66638e29ca99bd5489c76237116e7789,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: f02b5317693b5354e94a5281f0089bde,
     type: 2}
   udonAssembly: 
   assemblyError: 

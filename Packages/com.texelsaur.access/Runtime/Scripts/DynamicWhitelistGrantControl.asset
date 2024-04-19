@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: DynamicWhitelistGrantControl
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: bbdcee29f2d9727459d9201e6baa17c5,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 91a20e6873abc0743a700fb954b18338,
     type: 2}
   udonAssembly: 
   assemblyError: 
