@@ -1893,6 +1893,86 @@ LightingSettings:
   m_PVRTiledBaking: 0
   m_NumRaysToShootPerTexel: -1
   m_RespectSceneVisibilityWhenBakingGI: 0
+--- !u!1001 &883625923
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 322265640433150316, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: serializationData.Prefab
+      value: 
+      objectReference: {fileID: 322265640433150316, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+    - target: {fileID: 2800554310866186703, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_Name
+      value: VIP Lounge
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.9667577
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.6632624
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 34.33883
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4464480008468447412, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: serializedProgramAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 2425352e37fe2ab4eb1f0c73ef011145,
+        type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: be093678fbaedd846b259eba01a660ef, type: 3}
 --- !u!1001 &887826270
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5079,3 +5159,4 @@ SceneRoots:
   - {fileID: 110864627}
   - {fileID: 282739493}
   - {fileID: 369763123}
+  - {fileID: 883625923}
