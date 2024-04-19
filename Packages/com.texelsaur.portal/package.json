@@ -1,0 +1,35 @@
+{
+  "name": "com.texelsaur.portal",
+  "displayName": "TXL - PortalTXL",
+  "author": {
+    "name": "Texelsaur",
+    "email": "",
+    "url": "https://texelsaurus.com"
+  },
+  "version": "1.0.2",
+  "description": "Prefab to support creating interactive VR/real-world portals",
+  "gitDependencies": {},
+  "vpmDependencies": {
+    "com.texelsaur.common": "^1.0.0",
+    "com.texelsaur.access": "^1.0.0",
+    "com.texelsaur.misc": "^1.0.0",
+    "com.texelsaur.playeraudio": "^1.0.0",
+    "com.texelsaur.video": "^2.0.0"
+  },
+  "legacyFolders": {
+    "Assets\\Texel\\Portal": "eda1ad4b4cabe694a9023a767e95d0e9",
+    "Assets\\Texel\\Common": "4b7c604a04100044fa7a6bc20b864417",
+    "Assets\\Texel\\Editor\\Common\\Zone": "02b21299875c99746bb1cb275d975b0f",
+    "Assets\\Texel\\General": "81f95970275325444934d9b5af7257dc",
+    "Assets\\Texel\\Editor\\Misc": "687c3981dc8a8e440b2f42e3950982c7",
+    "Assets\\Texel\\Video": "ace4181b0afdac4418edcadd987c6796",
+    "Assets\\Texel\\Editor\\Video": "3f99bfc9e8383d34498b3ae97bced3a4",
+    "Assets\\Texel\\ACL": "6d836c3eaf6837d40aa4219fb6a42333",
+    "Assets\\Texel\\Editor\\ACL": "d7477807343521140a364e80cfaf16e1",
+    "Assets\\Texel\\Editor\\Common\\ACL": "65d3dc0a981654c42bddb68d3df9537b"
+  },
+  "legacyFiles": {
+    "Assets\\Texel\\Editor\\Common\\EditorTools.cs": "bf2c707af7283de498e934204c342c06",
+    "Assets\\Texel\\Video\\Textures\\UI\\ui_atlas.png": "a1d53f153b56ac4ca4eaa6ba39a8ee4"
+  }
+}
