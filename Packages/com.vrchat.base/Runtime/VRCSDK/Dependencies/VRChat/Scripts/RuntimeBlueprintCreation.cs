@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
@@ -9,6 +10,7 @@ using VRC.SDK3.Image;
 namespace VRCSDK2
 {
 #if UNITY_EDITOR
+    [Obsolete("Runtime uploads are deprecated. Use methods provided by the VRC.SDKBase.Editor.Api.VRCApi class for uploads")]
     public class RuntimeBlueprintCreation : RuntimeAPICreation
     {
         public GameObject waitingPanel;
@@ -347,7 +349,6 @@ namespace VRCSDK2
                     pipelineManager.blueprintId = savedBP.id;
                     UnityEditor.EditorPrefs.SetString("blueprintID-" + pipelineManager.GetInstanceID().ToString(), savedBP.id);
 
-                    AnalyticsSDK.AvatarUploaded(savedBP, false);
                     doneUploading = true;
                 },
                 (c) =>
@@ -384,7 +385,7 @@ namespace VRCSDK2
 
             SetUploadProgress("Saving Avatar", "Almost finished!!", 0.8f);
             apiAvatar.Save(
-                    (c) => { AnalyticsSDK.AvatarUploaded(apiAvatar, true); doneUploading = true; },
+                    (c) => {doneUploading = true; },
                     (c) => {
                         Debug.LogError(c.Error);
                         SetUploadProgress("Saving Avatar", "Error saving blueprint.", 0.0f);

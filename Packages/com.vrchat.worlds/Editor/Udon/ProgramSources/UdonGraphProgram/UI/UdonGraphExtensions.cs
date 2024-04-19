@@ -170,6 +170,11 @@ namespace VRC.Udon.Editor.ProgramSources.UdonGraphProgram.UI
                 "VRCUdonCommonInterfacesIUdonEventReceiver.__SetHeapVariable__SystemString_SystemObject__SystemVoid",
                 "VRCUdonCommonInterfacesIUdonEventReceiver.__GetHeapVariable__SystemString__SystemObject",
                 "Const_VRCUdonCommonInterfacesIUdonEventReceiver",
+                "Event_OnPurchaseConfirmed",
+                "Event_OnPurchaseUse",
+                "Event_OnPurchaseExpired",
+                "Event_OnListPurchases",
+                "Event_OnListAvailableProducts"
             };
 
                 // Don't show for any of these
@@ -332,6 +337,10 @@ namespace VRC.Udon.Editor.ProgramSources.UdonGraphProgram.UI
                 typeString = typeString.Replace("Array", "[]");
             }
 
+			typeString = typeString.Replace("SDK3PlayerData", "PlayerData"); // Should SDK3 just be removed always?
+            typeString = typeString.Replace("Getstring", "GetString");
+            typeString = typeString.Replace("Setstring", "SetString");
+
             typeString = typeString.Replace("SDK3VideoComponentsBaseBase", "");
             typeString = typeString.Replace("SDK3stringLoading", "");
             typeString = typeString.Replace("SDK3Image", "");
@@ -344,8 +353,10 @@ namespace VRC.Udon.Editor.ProgramSources.UdonGraphProgram.UI
             typeString = typeString.Replace("VideoVideo", "Video");
             typeString = typeString.Replace("VRCUdonCommon", "");
             typeString = typeString.Replace("Shuffle[]", "ShuffleArray");
+            typeString = typeString.Replace("Economy", "");
             typeString = typeString.Replace("RenderingPostProcessing", "");
             typeString = typeString.Replace("VRCSDK3Rendering", "");
+            typeString = typeString.Replace("VRCSDK3PlatformScreenUpdateData", "ScreenUpdateData");
             // ReSharper disable once StringLiteralTypo
             if (typeString.Replace("ector", "").Contains("ctor")) //Handle "Vector/vector"
             {

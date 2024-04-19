@@ -16,6 +16,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using VRC.Core;
+
 #if UNITY_EDITOR
 
 namespace VRC.Udon.Serialization.OdinSerializer.Editor
@@ -36,6 +38,8 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
         private bool scanning;
         private bool allowRegisteringScannedTypes;
         private HashSet<Type> seenSerializedTypes = new HashSet<Type>();
+        private HashSet<string> scannedPathsNoDependencies = new HashSet<string>();
+        private HashSet<string> scannedPathsWithDependencies = new HashSet<string>();
 
         private static System.Diagnostics.Stopwatch smartProgressBarWatch = System.Diagnostics.Stopwatch.StartNew();
         private static int smartProgressBarDisplaysSinceLastUpdate = 0;
@@ -49,6 +53,8 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
             allowRegisteringScannedTypes = false;
 
             this.seenSerializedTypes.Clear();
+            this.scannedPathsNoDependencies.Clear();
+            this.scannedPathsWithDependencies.Clear();
 
             FormatterLocator.OnLocatedEmittableFormatterForType += this.OnLocatedEmitType;
             FormatterLocator.OnLocatedFormatter += this.OnLocatedFormatter;
@@ -289,6 +295,7 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
                 }
 
                 var resourcesPathsSet = new HashSet<string>();
+
                 for (int i = 0; i < resourcesPaths.Count; i++)
                 {
                     var resourcesPath = resourcesPaths[i];
@@ -317,7 +324,7 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
                             Debug.LogException(ex, resource);
                             continue;
                         }
-                }
+                    }
                 }
 
                 string[] resourcePaths = resourcesPathsSet.ToArray();
@@ -327,19 +334,19 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
                     if (resourcePaths[i] == null) continue;
 
                     try
-                {
-                        if (showProgressBar && DisplaySmartUpdatingCancellableProgressBar("Scanning resource " + i + " for AOT support", resourcePaths[i], (float)i / resourcePaths.Length))
                     {
-                        return false;
-                    }
+                        if (showProgressBar && DisplaySmartUpdatingCancellableProgressBar("Scanning resource " + i + " for AOT support", resourcePaths[i], (float)i / resourcePaths.Length))
+                        {
+                            return false;
+                        }
 
                         var assetPath = resourcePaths[i];
 
-                    // Exclude editor-only resources
-                    if (assetPath.ToLower().Contains("/editor/")) continue;
+                        // Exclude editor-only resources
+                        if (assetPath.ToLower().Contains("/editor/")) continue;
 
-                    this.ScanAsset(assetPath, includeAssetDependencies: includeResourceDependencies);
-                }
+                        this.ScanAsset(assetPath, includeAssetDependencies: includeResourceDependencies);
+                    }
                     catch (MissingReferenceException ex)
                     {
                         Debug.LogError("A resource '" + resourcePaths[i] + "' threw a missing reference exception when scanning. Skipping resource and continuing scan.");
@@ -434,27 +441,34 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
                             
                             if ((go.hideFlags & HideFlags.DontSaveInBuild) == 0)
                             {
-                                foreach (var component in go.GetComponents<ISerializationCallbackReceiver>())
+#if VRC_CLIENT
+                                using (go.GetComponentsPooled(out List<ISerializationCallbackReceiver> components))
+#else
+                                ISerializationCallbackReceiver[] components = go.GetComponents<ISerializationCallbackReceiver>();
+#endif
                                 {
-                                    try
+                                    foreach (var component in components)
                                     {
-                                        this.allowRegisteringScannedTypes = true;
-                                        component.OnBeforeSerialize();
-
-                                        var prefabSupporter = component as ISupportsPrefabSerialization;
-
-                                        if (prefabSupporter != null)
+                                        try
                                         {
-                                            // Also force a serialization of the object's prefab modifications, in case there are unknown types in there
+                                            this.allowRegisteringScannedTypes = true;
+                                            component.OnBeforeSerialize();
 
-                                            List<UnityEngine.Object> objs = null;
-                                            var mods = UnitySerializationUtility.DeserializePrefabModifications(prefabSupporter.SerializationData.PrefabModifications, prefabSupporter.SerializationData.PrefabModificationsReferencedUnityObjects);
-                                            UnitySerializationUtility.SerializePrefabModifications(mods, ref objs);
+                                            var prefabSupporter = component as ISupportsPrefabSerialization;
+
+                                            if (prefabSupporter != null)
+                                            {
+                                                // Also force a serialization of the object's prefab modifications, in case there are unknown types in there
+
+                                                List<UnityEngine.Object> objs = null;
+                                                var mods = UnitySerializationUtility.DeserializePrefabModifications(prefabSupporter.SerializationData.PrefabModifications, prefabSupporter.SerializationData.PrefabModificationsReferencedUnityObjects);
+                                                UnitySerializationUtility.SerializePrefabModifications(mods, ref objs);
+                                            }
                                         }
-                                    }
-                                    finally
-                                    {
-                                        this.allowRegisteringScannedTypes = false;
+                                        finally
+                                        {
+                                            this.allowRegisteringScannedTypes = false;
+                                        }
                                     }
                                 }
                             }
@@ -541,6 +555,20 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
 
         public bool ScanAsset(string assetPath, bool includeAssetDependencies)
         {
+            if (includeAssetDependencies)
+            {
+                if (this.scannedPathsWithDependencies.Contains(assetPath)) return true; // Already scanned this asset
+
+                this.scannedPathsWithDependencies.Add(assetPath);
+                this.scannedPathsNoDependencies.Add(assetPath);
+            }
+            else
+            {
+                if (this.scannedPathsNoDependencies.Contains(assetPath)) return true; // Already scanned this asset
+
+                this.scannedPathsNoDependencies.Add(assetPath);
+            }
+
             if (assetPath.EndsWith(".unity"))
             {
                 return this.ScanScenes(new string[] { assetPath }, includeAssetDependencies, false);
@@ -548,7 +576,7 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
 
             if (!(assetPath.EndsWith(".asset") || assetPath.EndsWith(".prefab")))
             {
-                // ScanAsset can only scan .asset and .prefab assets.
+                // ScanAsset can only scan .unity, .asset and .prefab assets.
                 return false;
             }
 
@@ -656,7 +684,7 @@ namespace VRC.Udon.Serialization.OdinSerializer.Editor
             this.RegisterType(type);
         }
 
-        private static bool AllowRegisterType(Type type)
+        public static bool AllowRegisterType(Type type)
         {
             if (IsEditorOnlyAssembly(type.Assembly))
                 return false;

@@ -146,6 +146,53 @@ namespace Tests.DataContainers
             SetAndGet("bool array reference", new DataToken(new bool[] {false, true, false}));
         }
 
+        [Test]
+        public void TestBitcast()
+        {
+            // test value requires 5 bytes, larger than an int at 4
+            var token = new DataToken(0x12_3456_7890UL);
+            Assert.AreEqual(0x12_3456_7890UL, token.ULong);
+            Assert.AreEqual(TokenType.ULong, token.TokenType);
+
+            // test that normal cast fails
+            Assert.Throws<InvalidOperationException>(() => _ = token.Long);
+
+            // test that bitcast works
+            var bitlong = token.Bitcast(TokenType.Long);
+            Assert.AreEqual(0x12_3456_7890L, bitlong.Long);
+            Assert.AreEqual(TokenType.Long, bitlong.TokenType);
+
+            // truncate the original long
+            var bitint = token.Bitcast(TokenType.Int);
+            Assert.AreEqual(0x3456_7890, bitint.Int);
+            Assert.AreEqual(TokenType.Int, bitint.TokenType);
+            // back to ulong and it should have been zero-extended
+            var bitint_aslong = bitint.Bitcast(TokenType.ULong);
+            Assert.AreEqual(0x3456_7890UL, bitint_aslong.ULong);
+            Assert.AreEqual(TokenType.ULong, bitint_aslong.TokenType);
+            // as byte it will be truncated further
+            var bitint_asbyte = bitint.Bitcast(TokenType.Byte);
+            Assert.AreEqual(0x90, bitint_asbyte.Byte);
+            Assert.AreEqual(TokenType.Byte, bitint_asbyte.TokenType);
+            // converting back from byte will once again zero-extend, the 0x12345678 has been lost, only 0x90 remains
+            var bitint_back = bitint_asbyte.Bitcast(TokenType.Int);
+            Assert.AreEqual(0x90, bitint_back.Int);
+            Assert.AreEqual(TokenType.Int, bitint_back.TokenType);
+
+            // test that bitcasting to types where the bitpattern might be invalid still preserves it
+            var bitdouble = token.Bitcast(TokenType.Double);
+            Assert.AreNotEqual(1.0f, bitdouble.Double);
+            Assert.AreEqual(TokenType.Double, bitdouble.TokenType);
+            var bitdouble_back = bitdouble.Bitcast(TokenType.ULong);
+            Assert.AreEqual(0x12_3456_7890UL, bitdouble_back.ULong);
+            Assert.AreEqual(TokenType.ULong, bitdouble_back.TokenType);
+
+            // test that bitcast fails on incompatible types
+            Assert.Throws<InvalidOperationException>(() => _ = token.Bitcast(TokenType.String));
+            var stringtoken = new DataToken("hello");
+            Assert.Throws<InvalidOperationException>(() => _ = stringtoken.Bitcast(TokenType.Float));
+        }
+
         private void SetAndGet(string title, DataToken inToken)
         {
             SetAndGetDictionary(title, inToken);

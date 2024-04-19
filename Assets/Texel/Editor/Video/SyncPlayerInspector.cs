@@ -2,7 +2,7 @@
 
 using UnityEditor;
 using UdonSharpEditor;
-using UnityEditor.Experimental.SceneManagement;
+
 using System.Collections.Generic;
 
 namespace Texel
@@ -70,7 +70,7 @@ namespace Texel
 
             // Automatically generate resources and update components when prefab is dropped into the scene
             // The hidden prefabInitizlied property is set false on the shipped video player variants
-            PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
+            UnityEditor.SceneManagement.PrefabStage stage = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
             if (stage == null && !prefabInitializedProperty.boolValue)
             {
                 serializedObject.Update();

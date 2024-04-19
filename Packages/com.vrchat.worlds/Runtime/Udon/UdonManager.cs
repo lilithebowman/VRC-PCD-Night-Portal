@@ -12,8 +12,16 @@ using VRC.Udon.ClientBindings.Interfaces;
 using VRC.Udon.Common;
 using VRC.Udon.Common.Enums;
 using VRC.Udon.Common.Interfaces;
+using VRC.Udon.Serialization.OdinSerializer;
+using VRC.Udon.Serialization.OdinSerializer.Utilities;
 using Logger = VRC.Core.Logger;
 using Object = UnityEngine.Object;
+
+#if VRC_CLIENT
+using VRC.Core;
+using VRC.Core.Pool;
+#endif
+
 #if ENABLE_PARALLEL_PRELOAD
 using System.Threading.Tasks;
 #endif
@@ -24,6 +32,7 @@ namespace VRC.Udon
     public class UdonManager : MonoBehaviour, IUdonClientInterface
     {
         public static event Action<IUdonProgram> OnUdonProgramLoaded;
+        public static event Action OnUdonReady;
 
         public UdonBehaviour currentlyExecuting;
 
@@ -106,6 +115,9 @@ namespace VRC.Udon
 
         [PublicAPI]
         public const string UDON_EVENT_ONPLAYERRESPAWN = "_onPlayerRespawn";
+        
+        [PublicAPI]
+        public const string UDON_EVENT_ONSCREENUPDATE = "_onScreenUpdate";
 
         #region Input Actions and Axes
 
@@ -146,6 +158,9 @@ namespace VRC.Udon
 
         [PublicAPI]
         public const string UDON_LOOK_HORIZONTAL = "_inputLookHorizontal";
+        
+        [PublicAPI]
+        public const string UDON_EVENT_ONINPUTMETHODCHANGED = "_onInputMethodChanged";
 
         #endregion
 
@@ -480,20 +495,34 @@ namespace VRC.Udon
                 Dictionary<GameObject, HashSet<UdonBehaviour>> sceneUdonBehaviourDirectory =
                     new Dictionary<GameObject, HashSet<UdonBehaviour>>();
 
+#if !VRC_CLIENT
                 List<Transform> transformsTempList = new List<Transform>();
+#endif
                 foreach(GameObject rootGameObject in scene.GetRootGameObjects())
                 {
+#if VRC_CLIENT
+                    using (rootGameObject.GetComponentsInChildrenPooled(out List<Transform> transformsTempList, true))
+#else
                     rootGameObject.GetComponentsInChildren(true, transformsTempList);
-                    foreach(Transform currentTransform in transformsTempList)
+#endif
                     {
-                        List<UdonBehaviour> currentGameObjectUdonBehaviours = new List<UdonBehaviour>();
-                        GameObject currentGameObject = currentTransform.gameObject;
-                        currentGameObject.GetComponents(currentGameObjectUdonBehaviours);
-                        if(currentGameObjectUdonBehaviours.Count > 0)
+                        foreach(Transform currentTransform in transformsTempList)
                         {
-                            sceneUdonBehaviourDirectory.Add(
-                                currentGameObject,
-                                new HashSet<UdonBehaviour>(currentGameObjectUdonBehaviours));
+                            GameObject currentGameObject = currentTransform.gameObject;
+#if VRC_CLIENT
+                            using (currentGameObject.GetComponentsPooled(out List<UdonBehaviour> currentGameObjectUdonBehaviours))
+#else
+                            List<UdonBehaviour> currentGameObjectUdonBehaviours = new List<UdonBehaviour>();
+                            currentGameObject.GetComponents(currentGameObjectUdonBehaviours);
+#endif
+                            {
+                                if(currentGameObjectUdonBehaviours.Count > 0)
+                                {
+                                    sceneUdonBehaviourDirectory.Add(
+                                        currentGameObject,
+                                        new HashSet<UdonBehaviour>(currentGameObjectUdonBehaviours));
+                                }
+                            }
                         }
                     }
                 }
@@ -576,7 +605,9 @@ namespace VRC.Udon
             }
             finally
             {
+                PurgeSerializationCaches();
                 Logger.Log($"UdonManager.OnSceneLoaded took '{timer.Elapsed.TotalSeconds:N3}'");
+                OnUdonReady?.Invoke();
             }
         }
 
@@ -588,7 +619,50 @@ namespace VRC.Udon
 
         private void OnSceneUnloaded(Scene scene)
         {
+            PurgeSerializationCaches();
             _sceneUdonBehaviourDirectories.Remove(scene);
+        }
+        
+        private void PurgeSerializationCaches()
+        {
+            Cache<DeserializationContext>.Purge();
+            Cache<SerializationContext>.Purge();
+            Cache<BinaryDataReader>.Purge();
+            Cache<UnityReferenceResolver>.Purge();
+            Cache<BinaryDataWriter>.Purge();
+        }
+
+        public ulong GetTotalLoadedProgramSize()
+        {
+            ulong totalSize = 0L;
+
+#if VRC_CLIENT
+            using (HashSetPool.Get(out HashSet<int> observedProgramIds))
+#else
+            HashSet<int> observedProgramIds = new HashSet<int>();
+#endif
+            {
+                foreach(Dictionary<GameObject, HashSet<UdonBehaviour>> sceneUdonBehaviourDirectory in _sceneUdonBehaviourDirectories.Values)
+                {
+                    foreach(HashSet<UdonBehaviour> udonBehaviourList in sceneUdonBehaviourDirectory.Values)
+                    {
+                        foreach(UdonBehaviour udonBehaviour in udonBehaviourList)
+                        {
+                            if(udonBehaviour != null)
+                            {
+                                int programId = udonBehaviour.ProgramId;
+                                if (programId != 0 && !observedProgramIds.Contains(programId))
+                                {
+                                    totalSize += udonBehaviour.ProgramSize;
+                                    observedProgramIds.Add(udonBehaviour.ProgramId);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return totalSize;
         }
 
         #endregion
@@ -715,6 +789,28 @@ namespace VRC.Udon
             }
 
             udonBehaviour.InitializeUdonContent();
+        }
+
+        public List<UdonBehaviour> UdonBehavioursInScene = new List<UdonBehaviour>();
+        [PublicAPI]
+        public List<UdonBehaviour> GetUdonBehavioursInScene()
+        {
+            UdonBehavioursInScene.Clear();
+            foreach(Dictionary<GameObject, HashSet<UdonBehaviour>> sceneUdonBehaviourDirectory in
+                    _sceneUdonBehaviourDirectories.Values)
+            {
+                foreach(HashSet<UdonBehaviour> udonBehaviourList in sceneUdonBehaviourDirectory.Values)
+                {
+                    foreach(UdonBehaviour udonBehaviour in udonBehaviourList)
+                    {
+                        if(udonBehaviour != null)
+                        {
+                            UdonBehavioursInScene.Add(udonBehaviour);
+                        }
+                    }
+                }
+            }
+            return UdonBehavioursInScene;
         }
 
         #region Global RunEvent Methods
