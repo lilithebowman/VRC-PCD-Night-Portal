@@ -8,17 +8,17 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: No Name
-  m_Shader: {fileID: 4800000, guid: fad6bf78a389c4a45833fa2633591844, type: 3}
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALPHAPREMULTIPLY_ON
-  - _LIGHTMAPSPECULAR
   - _METALLICGLOSSMAP
   - _NORMALMAP
   - _PARALLAXMAP
   m_InvalidKeywords:
   - _BAKERY_NONE
+  - _LIGHTMAPSPECULAR
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -94,6 +94,7 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 10
+    - _EnableEmission: 0
     - _ExposureOcclusion: 0.2
     - _GlossMapScale: 1
     - _Glossiness: 0
@@ -114,6 +115,6 @@ Material:
     - _specularAntiAliasingThreshold: 0.25
     - _specularAntiAliasingVariance: 0.15
     m_Colors:
-    - _Color: {r: 0.31041923, g: 0.18845674, b: 0.3301887, a: 1}
+    - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
