@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: AudioPlayerOverrideList
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 40ecd8a4e3148964493e0e03bd0ebeb6,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 8e158f54f7da0544698901b2eab0ee67,
     type: 2}
   udonAssembly: 
   assemblyError: 

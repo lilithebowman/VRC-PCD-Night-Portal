@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: MicController
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 2ad5cca6014e2bd4cbf48845edf69548,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: a09c17fac4851cf418500031bfc8ae3b,
     type: 2}
   udonAssembly: 
   assemblyError: 
