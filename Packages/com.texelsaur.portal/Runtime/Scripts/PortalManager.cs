@@ -12,7 +12,11 @@ namespace Texel
 
         public AccessControl botAcl;
         public AccessControl modAcl;
+
+        [HideInInspector]
         public AudioOverrideZone botAudioZone;
+
+        public ZoneTrigger botZone;
 
         public GameObject botCamBox;
 
@@ -28,6 +32,11 @@ namespace Texel
         void Start()
         {
             SendCustomEventDelayedFrames("_Init", 1);
+
+            if (!botZone && botAudioZone)
+                botZone = botAudioZone.GetComponent<ZoneTrigger>();
+
+            botAudioZone = null;
         }
 
         public void _Init()
@@ -104,11 +113,8 @@ namespace Texel
 
             botCamBox.SetActive(true);
 
-            if (Utilities.IsValid(botAudioZone))
-            {
-                botAudioZone.playerArg = Networking.LocalPlayer;
-                botAudioZone._PlayerEnter();
-            }
+            if (Utilities.IsValid(botZone))
+                botZone._PlayerTriggerEnter(Networking.LocalPlayer);
         }
 
         public void _StationExit()
@@ -122,11 +128,8 @@ namespace Texel
             botCamBox.SetActive(false);
             Networking.LocalPlayer.Immobilize(false);
 
-            if (Utilities.IsValid(botAudioZone))
-            {
-                botAudioZone.playerArg = Networking.LocalPlayer;
-                botAudioZone._PlayerLeave();
-            }
+            if (Utilities.IsValid(botZone))
+                botZone._PlayerTriggerExit(Networking.LocalPlayer);
         }
 
         public override bool OnOwnershipRequest(VRCPlayerApi requestingPlayer, VRCPlayerApi requestedOwner)
@@ -171,9 +174,9 @@ namespace Texel
                     obj.SetActive(!active);
             }
 
-            if (botAudioZone)
+            if (botZone)
             {
-                Collider collider = botAudioZone.GetComponent<Collider>();
+                Collider collider = botZone.GetComponent<Collider>();
                 if (collider)
                     collider.enabled = active;
             }

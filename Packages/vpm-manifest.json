@@ -6,11 +6,17 @@
     "com.llealloo.audiolink": {
       "version": "1.3.0"
     },
-    "com.texelsaur.portal": {
-      "version": "1.0.2"
-    },
     "com.vrchat.worlds": {
       "version": "3.5.2"
+    },
+    "com.texelsaur.playeraudio": {
+      "version": "1.0.4"
+    },
+    "com.texelsaur.portal": {
+      "version": "1.0.3"
+    },
+    "com.texelsaur.video": {
+      "version": "2.4.6"
     }
   },
   "locked": {
@@ -25,16 +31,6 @@
     "com.llealloo.audiolink": {
       "version": "1.3.0",
       "dependencies": {}
-    },
-    "com.texelsaur.portal": {
-      "version": "1.0.2",
-      "dependencies": {
-        "com.texelsaur.common": "^1.0.0",
-        "com.texelsaur.access": "^1.0.0",
-        "com.texelsaur.misc": "^1.0.0",
-        "com.texelsaur.playeraudio": "^1.0.0",
-        "com.texelsaur.video": "^2.0.0"
-      }
     },
     "com.texelsaur.common": {
       "version": "1.5.2",
@@ -52,23 +48,33 @@
         "com.texelsaur.common": "^1.0.0"
       }
     },
+    "com.vrchat.worlds": {
+      "version": "3.5.2",
+      "dependencies": {
+        "com.vrchat.base": "3.5.2"
+      }
+    },
     "com.texelsaur.playeraudio": {
-      "version": "1.0.3",
+      "version": "1.0.4",
       "dependencies": {
         "com.texelsaur.common": "^1.0.0",
         "com.texelsaur.misc": "^1.0.0"
       }
     },
-    "com.texelsaur.video": {
-      "version": "2.4.4",
+    "com.texelsaur.portal": {
+      "version": "1.0.3",
       "dependencies": {
-        "com.texelsaur.common": "^1.5.0"
+        "com.texelsaur.common": "^1.0.0",
+        "com.texelsaur.access": "^1.0.0",
+        "com.texelsaur.misc": "^1.0.0",
+        "com.texelsaur.playeraudio": "^1.0.0",
+        "com.texelsaur.video": "^2.0.0"
       }
     },
-    "com.vrchat.worlds": {
-      "version": "3.5.2",
+    "com.texelsaur.video": {
+      "version": "2.4.6",
       "dependencies": {
-        "com.vrchat.base": "3.5.2"
+        "com.texelsaur.common": "^1.5.0"
       }
     }
   }

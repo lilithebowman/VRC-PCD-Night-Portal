@@ -43,6 +43,26 @@ namespace Texel
             get { return syncStreamOutEnabled; }
         }
 
+        public AudioOverrideZone BotAudioZone
+        {
+            get { return botAudioZone; }
+            set
+            {
+                botAudioZone = value;
+                _UpdateStreamOut();
+            }
+        }
+
+        public AudioOverrideZone PortalAudioZone
+        {
+            get { return portalAudioZone; }
+            set
+            {
+                portalAudioZone = value;
+                _UpdateStreamOut();
+            }
+        }
+
         public void _ToggleStreamOut()
         {
             if (!modAcl._LocalHasAccess())
@@ -70,7 +90,8 @@ namespace Texel
                 camBoxMat.SetTexture("_ScreenTex", streamOutOffTex);
             }
 
-            botAudioZone._SetLinkedZoneActive(portalAudioZone, StreamOutEnabled);
+            if (botAudioZone && portalAudioZone)
+                botAudioZone._SetLinkedZoneActive(portalAudioZone, StreamOutEnabled);
         }
     }
 }
