@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: ColliderDisable
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: ecfe10c488732d742916c58293d11c6e,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 7136a56a706ecf94188d3c95bfbe62a0,
     type: 2}
   udonAssembly: 
   assemblyError: 

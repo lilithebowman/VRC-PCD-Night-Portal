@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: TeleportToLoungeButton
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: c6aa32a5c24f9c44d87d988cedb04aa5,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 2427b5827e30fb841bb5b265cd9a0135,
     type: 2}
   udonAssembly: 
   assemblyError: 

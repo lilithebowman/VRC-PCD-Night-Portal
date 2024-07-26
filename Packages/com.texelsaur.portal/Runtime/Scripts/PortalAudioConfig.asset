@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: PortalAudioConfig
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: eefb09b26645bfa4da476086255c1d48,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 800d5444ab1546e4d9c82ad3f85d5578,
     type: 2}
   udonAssembly: 
   assemblyError: 

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 8900000, guid: 1cde0e200e792cb4491204276a656490, type: 3}
   m_Sun: {fileID: 853653797}
-  m_IndirectSpecularColor: {r: 0.48396307, g: 0.5757423, b: 0.6802008, a: 1}
+  m_IndirectSpecularColor: {r: 0.4839627, g: 0.5757432, b: 0.6802007, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -97,8 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: 8820f5c40e7513846820880dbf408526,
-    type: 2}
+  m_LightingDataAsset: {fileID: 0}
   m_LightingSettings: {fileID: 867823181}
 --- !u!196 &4
 NavMeshSettings:
@@ -1508,7 +1507,7 @@ MonoBehaviour:
   AllowCollisionOwnershipTransfer: 0
   Reliable: 0
   _syncMethod: 2
-  serializedProgramAsset: {fileID: 11400000, guid: c6aa32a5c24f9c44d87d988cedb04aa5,
+  serializedProgramAsset: {fileID: 11400000, guid: 2427b5827e30fb841bb5b265cd9a0135,
     type: 2}
   programSource: {fileID: 11400000, guid: 8521e18c8df519c47a960eed2947b68d, type: 2}
   serializedPublicVariablesBytesString: Ai8AAAAAATIAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAFQAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AAAAAAAYBAAAAAAAAACcBBAAAAHQAeQBwAGUAAWgAAABTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBMAGkAcwB0AGAAMQBbAFsAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4ALgBJAG4AdABlAHIAZgBhAGMAZQBzAC4ASQBVAGQAbwBuAFYAYQByAGkAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AXQBdACwAIABtAHMAYwBvAHIAbABpAGIAAQEJAAAAVgBhAHIAaQBhAGIAbABlAHMALwEAAAABaAAAAFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ARwBlAG4AZQByAGkAYwAuAEwAaQBzAHQAYAAxAFsAWwBWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAEkAbgB0AGUAcgBmAGEAYwBlAHMALgBJAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlACwAIABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgBdAF0ALAAgAG0AcwBjAG8AcgBsAGkAYgABAAAABgEAAAAAAAAAAi8CAAAAAUkAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAGAAMQBbAFsAUwB5AHMAdABlAG0ALgBJAG4AdAAzADIALAAgAG0AcwBjAG8AcgBsAGkAYgBdAF0ALAAgAFYAUgBDAC4AVQBkAG8AbgAuAEMAbwBtAG0AbwBuAAIAAAAGAgAAAAAAAAAnAQQAAAB0AHkAcABlAAEXAAAAUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwAsACAAbQBzAGMAbwByAGwAaQBiACcBCgAAAFMAeQBtAGIAbwBsAE4AYQBtAGUAAR8AAABfAF8AXwBVAGQAbwBuAFMAaABhAHIAcABCAGUAaABhAHYAaQBvAHUAcgBWAGUAcgBzAGkAbwBuAF8AXwBfACcBBAAAAHQAeQBwAGUAARYAAABTAHkAcwB0AGUAbQAuAEkAbgB0ADMAMgAsACAAbQBzAGMAbwByAGwAaQBiABcBBQAAAFYAYQBsAHUAZQACAAAABwUHBQcF
@@ -2210,6 +2209,7 @@ MonoBehaviour:
     - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  NavigationAreas: []
 --- !u!4 &673982315
 Transform:
   m_ObjectHideFlags: 0
@@ -2650,7 +2650,7 @@ Light:
   m_BounceIntensity: 2
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 1e-44, z: 8.224e-42, w: 2.547e-41}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 6e-45, z: 3.4622e-41, w: 1}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -2796,10 +2796,20 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 4.07
       objectReference: {fileID: 0}
+    - target: {fileID: 2715058928414202943, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_audioClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 149450c52755801488ab9e16ad6b839c, type: 3}
     - target: {fileID: 2800554310866186703, guid: be093678fbaedd846b259eba01a660ef,
         type: 3}
       propertyPath: m_Name
       value: VIP Lounge
+      objectReference: {fileID: 0}
+    - target: {fileID: 2800554310866186703, guid: be093678fbaedd846b259eba01a660ef,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 2800554310866186704, guid: be093678fbaedd846b259eba01a660ef,
         type: 3}
@@ -2855,7 +2865,7 @@ PrefabInstance:
         type: 3}
       propertyPath: serializedProgramAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 3de6fe1bce38d844195bfa06fb2165de,
+      objectReference: {fileID: 11400000, guid: 2425352e37fe2ab4eb1f0c73ef011145,
         type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects:
