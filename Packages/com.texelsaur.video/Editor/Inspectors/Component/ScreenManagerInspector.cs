@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using UnityEditorInternal;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
+using UdonSharp;
+using System.IO;
 
 namespace Texel
 {
@@ -20,6 +22,8 @@ namespace Texel
         public string applyGamma;
         public string screenFit;
         public string aspectRatio;
+        public string targetAspectRatio;
+        public string doubleBuffered;
 
         public EditorScreenPropertyMap() { }
 
@@ -35,6 +39,8 @@ namespace Texel
             emap.applyGamma = map.applyGamma;
             emap.screenFit = map.screenFit;
             emap.aspectRatio = map.aspectRatio;
+            emap.targetAspectRatio = map.targetAspectRatio;
+            emap.doubleBuffered = map.doubleBuffered;
 
             return emap;
         }
@@ -68,6 +74,9 @@ namespace Texel
                     map.invertY = "_FlipY";
                     map.applyGamma = "_ApplyGamma";
                     map.screenFit = "_FitMode";
+                    map.aspectRatio = "_TexAspectRatio";
+                    map.targetAspectRatio = "_AspectRatio";
+                    map.doubleBuffered = "_DoubleBuffered";
                     return map;
                 default:
                     return map;
@@ -86,6 +95,8 @@ namespace Texel
     {
         const string DEFAULT_CRT_PATH = "Packages/com.texelsaur.video/Runtime/RenderTextures/VideoTXLCRT.asset";
         const string DEFAULT_CRT_MAT_PATH = "Packages/com.texelsaur.video/Runtime/Materials/StreamOutput.mat";
+        const string DEFAULT_SCREEN_MAT_PATH = "Packages/com.texelsaur.video/Runtime/Materials/StandardMaterialScreen.mat";
+        const string DEFAULT_VRSL_MAT_PATH = "Packages/com.texelsaur.video/Runtime/Materials/StreamOutputVRSL.mat";
 
         static readonly string[] PLACEHOLDER_IMAGE_PATHS = {
             "Packages/com.texelsaur.video/Runtime/Textures/Placeholder Screens/Error.jpg",
@@ -117,6 +128,7 @@ namespace Texel
 
         static bool _showErrorMatFoldout;
         static bool _showErrorTexFoldout;
+        static bool _showCrtAdvanced = false;
 
         SerializedProperty videoPlayerProperty;
 
@@ -156,9 +168,21 @@ namespace Texel
         SerializedProperty renderOutResizeListProperty;
         SerializedProperty renderOutExpandSizeListProperty;
         SerializedProperty renderOutGlobalTexListProperty;
+        SerializedProperty renderOutDoubleBufferAVProListProperty;
+        SerializedProperty renderOutDoubleBufferUnityListProperty;
 
         SerializedProperty downloadLogoImageProperty;
         SerializedProperty downloadLogoImageUrlProperty;
+
+        // VRSL Integration
+        SerializedProperty vrslEnabledProperty;
+        SerializedProperty vrslControllerProperty;
+        SerializedProperty vrslDmxRTProperty;
+        SerializedProperty vrslOffsetScaleProperty;
+        SerializedProperty vrslSourceAspectRatioProperty;
+        SerializedProperty vrslBlitMatProperty;
+        SerializedProperty vrslDoubleBufferAVProProperty;
+        SerializedProperty vrslDoubleBufferUnityProperty;
 
         SerializedProperty _udonSharpBackingUdonBehaviourProperty;
 
@@ -173,9 +197,16 @@ namespace Texel
         ObjectOverrideListDisplay objectOverrideList;
         GlobalPropertyListDisplay globalPropList;
 
+        bool vrslOutsideLinked = false;
+        UdonBehaviour vrslControllerCache;
+        string vrslVersion = null;
+
+        static Material vrslEditorBlitMat = null;
+
         static bool expandTextures = true;
         static bool expandObjectOverrides = false;
         static bool expandDebug = false;
+        static bool expandIntegrations = false;
         static List<ScreenManager> managers;
         static RenderTexture videoTexRT;
 
@@ -183,6 +214,7 @@ namespace Texel
         static string textureOverridesUrl = "https://vrctxl.github.io/Docs/docs/video-txl/configuration/screen-manager#texture-overrides";
         static string objectMaterialsUrl = "https://vrctxl.github.io/Docs/docs/video-txl/configuration/screen-manager#object-material-overrides";
         static string debugOptionsUrl = "https://vrctxl.github.io/Docs/docs/video-txl/configuration/screen-manager#debug-options";
+        static string integrationsUrl = "https://vrctxl.github.io/Docs/docs/video-txl/configuration/screen-manager#integrations";
 
         static ScreenManagerInspector()
         {
@@ -192,6 +224,10 @@ namespace Texel
 
         static void OnSceneLoaded(Scene prevScene, Scene newScene)
         {
+            Scene scene = SceneManager.GetActiveScene();
+            if (scene == null || scene.name == "")
+                return;
+
             Debug.Log("SceneLoaded");
             UpdateManagers();
             UpdateEditorTextures();
@@ -199,6 +235,10 @@ namespace Texel
 
         static void OnAssemblyReload()
         {
+            Scene scene = SceneManager.GetActiveScene();
+            if (scene == null || scene.name == "")
+                return;
+
             Debug.Log("AssemblyReload");
             UpdateManagers();
             UpdateEditorTextures();
@@ -224,6 +264,7 @@ namespace Texel
                 UpdateEditorMaterialBlocks(manager);
                 UpdateEditorSharedMaterials(manager);
                 UpdateEditorCRT(manager);
+                UpdateEditorVRSL(manager);
             }
 
             EditorWindow view = EditorWindow.GetWindow<SceneView>();
@@ -274,23 +315,69 @@ namespace Texel
             renderOutResizeListProperty = serializedObject.FindProperty(nameof(ScreenManager.renderOutResize));
             renderOutExpandSizeListProperty = serializedObject.FindProperty(nameof(ScreenManager.renderOutExpandSize));
             renderOutGlobalTexListProperty = serializedObject.FindProperty(nameof(ScreenManager.renderOutGlobalTex));
+            renderOutDoubleBufferAVProListProperty = serializedObject.FindProperty(nameof(ScreenManager.renderOutDoubleBufferAVPro));
+            renderOutDoubleBufferUnityListProperty = serializedObject.FindProperty(nameof(ScreenManager.renderOutDoubleBufferUnity));
 
             downloadLogoImageProperty = serializedObject.FindProperty(nameof(ScreenManager.downloadLogoImage));
             downloadLogoImageUrlProperty = serializedObject.FindProperty(nameof(ScreenManager.downloadLogoImageUrl));
 
+            vrslEnabledProperty = serializedObject.FindProperty(nameof(ScreenManager.vrslEnabled));
+            vrslControllerProperty = serializedObject.FindProperty(nameof(ScreenManager.vrslController));
+            vrslDmxRTProperty = serializedObject.FindProperty(nameof(ScreenManager.vrslDmxRT));
+            vrslOffsetScaleProperty = serializedObject.FindProperty(nameof(ScreenManager.vrslOffsetScale));
+            vrslSourceAspectRatioProperty = serializedObject.FindProperty(nameof(ScreenManager.vrslSourceAspectRatio));
+            vrslBlitMatProperty = serializedObject.FindProperty(nameof(ScreenManager.vrslBlitMat));
+            vrslDoubleBufferAVProProperty = serializedObject.FindProperty(nameof(ScreenManager.vrslDoubleBufferAVPro));
+            vrslDoubleBufferUnityProperty = serializedObject.FindProperty(nameof(ScreenManager.vrslDoubleBufferUnity));
+
             _udonSharpBackingUdonBehaviourProperty = serializedObject.FindProperty("_udonSharpBackingUdonBehaviour");
 
-            crtList = new CrtListDisplay(serializedObject, (ScreenManager)target);
+            crtList = new CrtListDisplay(serializedObject, (ScreenManager)target, this);
             sharedMaterialList = new SharedMaterialListDisplay(serializedObject, (ScreenManager)target);
             propBlockList = new PropBlockListDisplay(serializedObject, (ScreenManager)target);
             objectOverrideList = new ObjectOverrideListDisplay(serializedObject, (ScreenManager)target);
             globalPropList = new GlobalPropertyListDisplay(serializedObject, (ScreenManager)target);
+
+            if (vrslBlitMatProperty.objectReferenceValue) {
+                if (vrslEditorBlitMat)
+                    vrslEditorBlitMat.CopyPropertiesFromMaterial((Material)vrslBlitMatProperty.objectReferenceValue);
+                else
+                    vrslEditorBlitMat = new Material((Material)vrslBlitMatProperty.objectReferenceValue);
+            }
+
+            if (renderOutDoubleBufferAVProListProperty.arraySize < renderOutCrtListProperty.arraySize)
+            {
+                renderOutDoubleBufferAVProListProperty.arraySize = renderOutCrtListProperty.arraySize;
+                for (int i = 0; i < renderOutCrtListProperty.arraySize; i++)
+                {
+                    CustomRenderTexture crt = (CustomRenderTexture)renderOutCrtListProperty.GetArrayElementAtIndex(i).objectReferenceValue;
+                    if (crt)
+                        renderOutDoubleBufferAVProListProperty.GetArrayElementAtIndex(i).boolValue = crt.doubleBuffered;
+                }
+                serializedObject.ApplyModifiedProperties();
+            }
+
+            if (renderOutDoubleBufferUnityListProperty.arraySize < renderOutCrtListProperty.arraySize)
+            {
+                renderOutDoubleBufferUnityListProperty.arraySize = renderOutCrtListProperty.arraySize;
+                for (int i = 0; i < renderOutCrtListProperty.arraySize; i++)
+                {
+                    CustomRenderTexture crt = (CustomRenderTexture)renderOutCrtListProperty.GetArrayElementAtIndex(i).objectReferenceValue;
+                    if (crt)
+                        renderOutDoubleBufferUnityListProperty.GetArrayElementAtIndex(i).boolValue = crt.doubleBuffered;
+                }
+                serializedObject.ApplyModifiedProperties();
+            }
 
             // CRT texture
             UpdateEditorState();
 
             // Upgrade legacy entries
             UpgradeLegacyCrtEntry();
+
+            vrslVersion = GetVRSLVersion();
+            vrslOutsideLinked = IsVRSLOnAnotherManager();
+            FindExternal();
         }
 
         static SerializedProperty GetElementSafe(SerializedProperty arr, int index)
@@ -332,6 +419,11 @@ namespace Texel
 
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             ObjectMaterialSection();
+
+            // ---
+
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            IntegrationsSection();
 
             // ---
 
@@ -439,9 +531,277 @@ namespace Texel
             EditorGUI.indentLevel--;
         }
 
+        static GUIContent doubleBufferLabel = new GUIContent("Double Bufferd", "Use double buffering with AVPro video sources to repeat previous frames whenever a frame is dropped.");
+        static GUIContent unityLabel = new GUIContent("Unity");
+        static GUIContent avproLabel = new GUIContent("AVPro");
+
+        private void IntegrationsSection()
+        {
+            if (!TXLEditor.DrawMainHeaderHelp(new GUIContent("External Systems"), ref expandIntegrations, integrationsUrl))
+                return;
+
+            EditorGUI.indentLevel++;
+            EditorGUILayout.LabelField(new GUIContent("VRSL"), EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(vrslEnabledProperty, new GUIContent("Enabled", "Whether the VRSL integration is enabled or not"));
+
+            if (vrslEnabledProperty.boolValue)
+            {
+                EditorGUILayout.PropertyField(vrslControllerProperty, new GUIContent("Local UI Control Panel", "The VRSL_LocalUIControlPanel in your scene"));
+                EditorGUILayout.PropertyField(vrslDmxRTProperty, new GUIContent("DMX Raw RT", "The VRSL raw RenderTexture for either horizontal, vertical, or legacy configuration"));
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(vrslBlitMatProperty, new GUIContent("DMX Copy material", "The material used to copy the DMX section of the video feed to the DMX Raw RT.  Do not change unless you know what you're doing."));
+                EditorGUILayout.PropertyField(vrslSourceAspectRatioProperty, new GUIContent("Source Aspect Ratio", "The expected aspect ratio of streams containing VRSL DMX Grid data"));
+                EditorGUI.indentLevel--;
+
+                float aspectRatio = vrslSourceAspectRatioProperty.floatValue;
+                if (aspectRatio <= 0)
+                {
+                    aspectRatio = 1.777777f;
+                    if (overrideAspectRatioProperty.boolValue && aspectRatioProperty.floatValue > 0)
+                        aspectRatio = aspectRatioProperty.floatValue;
+
+                    vrslSourceAspectRatioProperty.floatValue = aspectRatio;
+                }
+
+                RenderTexture rt = (RenderTexture)vrslDmxRTProperty.objectReferenceValue;
+                if (rt != null)
+                {
+                    EditorGUILayout.LabelField("DMX Area");
+                    EditorGUILayout.Space(3);
+
+                    // Horz: 104 x 960
+                    // Vert: 104 x 540
+
+                    bool vertical = rt.height == 540;
+                    float dmxW = 1;
+                    float dmxH = (208f / 1080) * (aspectRatio / 1.77777f);
+                    if (vertical)
+                    {
+                        dmxW = (208f / 1920) * (aspectRatio / 1.77777f);
+                        dmxH = 1;
+                    }
+
+                    Vector3 offsetScale = vrslOffsetScaleProperty.vector3Value;
+
+                    float editWidth = Math.Min(EditorGUIUtility.currentViewWidth - 45 - 50, 400f);
+                    float editHeight = editWidth / aspectRatio;
+
+                    Texture bgTex = (Texture)editorTextureProperty.objectReferenceValue;
+                    if (bgTex == null)
+                        bgTex = Texture2D.blackTexture;
+
+                    float requestHeight = editHeight;
+                    //if (vertical)
+                    requestHeight += 30;
+
+                    Rect rect = GUILayoutUtility.GetRect(editWidth, requestHeight);
+                    rect.x += 30;
+                    rect.width -= 30; // Margin
+                    rect.width -= 20; // Slider
+
+                    Rect boxRect = rect;
+                    boxRect.width = Math.Min(editWidth, rect.width);
+                    boxRect.height = boxRect.width / aspectRatio;
+                    boxRect.x = rect.x;
+
+                    Rect asRect = new Rect(boxRect.x + 1, boxRect.y + 1, boxRect.width - 2, boxRect.height - 2);
+                    if (!vertical)
+                    {
+                        float diffH = asRect.height - (asRect.height * dmxH);
+                        asRect.height = (asRect.height - diffH) * offsetScale.z;
+                        asRect.y += diffH * (1 - offsetScale.y);
+                        asRect.width *= offsetScale.z;
+                        asRect.x += (boxRect.width - 2 - asRect.width) * offsetScale.x;
+                    }
+                    else
+                    {
+                        float diffW = asRect.width - (asRect.width * dmxW);
+                        asRect.width = (asRect.width - diffW) * offsetScale.z;
+                        asRect.x += diffW * offsetScale.x;
+                        asRect.height *= offsetScale.z;
+                        asRect.y += (boxRect.height - 2 - asRect.height) * (1 - offsetScale.y);
+                    }
+
+                    GUI.DrawTexture(boxRect, bgTex, ScaleMode.StretchToFill, false, aspectRatio);
+                    Handles.DrawSolidRectangleWithOutline(asRect, new Color(1, 1, 1, .15f), Color.white);
+
+                    // Y Scroll
+                    Rect scrollRect = new Rect(boxRect.xMax + 5, boxRect.yMin + asRect.height / 2 - 3, 20, boxRect.height - asRect.height + 6);
+                    offsetScale.y = GUI.VerticalSlider(scrollRect, !vertical || offsetScale.z < 1 ? offsetScale.y : 0, 1, 0);
+
+                    // X Scroll
+                    scrollRect = new Rect(boxRect.xMin + asRect.width / 2, boxRect.yMax + 5, boxRect.width - asRect.width, 20);
+                    offsetScale.x = GUI.HorizontalSlider(scrollRect, vertical || offsetScale.z < 1 ? offsetScale.x : 0, 0, 1);
+
+                    EditorGUI.indentLevel++;
+                    Vector2 offset = EditorGUILayout.Vector2Field(new GUIContent("Offset"), new Vector2(offsetScale.x, offsetScale.y));
+                    offsetScale.x = Math.Clamp(offset.x, 0, 1);
+                    offsetScale.y = Math.Clamp(offset.y, 0, 1);
+
+                    offsetScale.z = EditorGUILayout.Slider(new GUIContent("Scale"), offsetScale.z, 0, 1);
+                    Rect buttonLineRect = GUILayoutUtility.GetRect(editWidth, EditorGUIUtility.singleLineHeight);
+                    Rect buttonArea = EditorGUI.PrefixLabel(buttonLineRect, new GUIContent(" "));
+                    Rect buttonRect = buttonArea;
+
+                    buttonRect.width = (buttonArea.width - 10) / 3;
+                    if (GUI.Button(buttonRect, new GUIContent("1080p")))
+                        offsetScale.z = 1;
+
+                    buttonRect.x = buttonArea.x + (buttonArea.width - 10) / 3 + 5;
+                    if (GUI.Button(buttonRect, new GUIContent("720p")))
+                        offsetScale.z = .666666f;
+
+                    buttonRect.x = buttonArea.x + (buttonArea.width - 10) / 3 * 2 + 10;
+                    if (GUI.Button(buttonRect, new GUIContent("480p")))
+                        offsetScale.z = .444444f;
+
+                    EditorGUI.indentLevel--;
+
+                    vrslOffsetScaleProperty.vector3Value = offsetScale;
+
+                    EditorGUILayout.Space(EditorGUIUtility.standardVerticalSpacing);
+                    Rect bufferRect = GUILayoutUtility.GetRect(editWidth, EditorGUIUtility.singleLineHeight);
+                    TXLGUI.DrawToggle2(bufferRect, 1, doubleBufferLabel, avproLabel, vrslDoubleBufferAVProProperty, unityLabel, vrslDoubleBufferUnityProperty);
+
+                    //EditorGUILayout.PropertyField(vrslDoubleBufferAVProProperty, new GUIContent("Double Buffer AVPro", "Use double buffering with AVPro video sources to repeat previous frames whenever a frame is dropped."));
+                }
+            }
+
+            if (vrslControllerCache)
+            {
+                if (vrslOutsideLinked && vrslControllerProperty.objectReferenceValue)
+                    EditorGUILayout.HelpBox("VRSL controller detected in scene.  VRSL is already linked to another TXL ScreenManager.  This can cause a conflict.", MessageType.Warning, true);
+                else if (vrslOutsideLinked && !vrslControllerProperty.objectReferenceValue)
+                    EditorGUILayout.HelpBox("VRSL controller detected in scene.  VRSL is already linked to another TXL ScreenManager.", MessageType.Info, true);
+                else if (!vrslControllerProperty.objectReferenceValue)
+                    EditorGUILayout.HelpBox("VRSL controller detected in scene.  Link VRSL to have this manager keep feed video data directly to VRSL.", MessageType.Info, true);
+
+                if (vrslControllerProperty.objectReferenceValue)
+                {
+                    UdonBehaviour behaviour = (UdonBehaviour)vrslControllerProperty.objectReferenceValue;
+                    if (behaviour.programSource.name != "VRSL_LocalUIControlPanel")
+                        EditorGUILayout.HelpBox("Specified UdonBehaviour is not a VRSL_LocalUIControlPanel script.", MessageType.Error, true);
+                }
+            }
+
+            if (vrslVersion != null && String.Compare(vrslVersion, "2.7.0") < 0)
+                EditorGUILayout.HelpBox($"Detected VRSL version {vrslVersion}.  VRSL should be updated to 2.7.0 or greater for integration to be handled correctly.", MessageType.Error, true);
+
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(15);
+            if (GUILayout.Button(new GUIContent("Link VRSL to this manager", "Finds VRSL in the scene and automatically configures rendering video data to it.")))
+                LinkVRSL();
+            GUILayout.EndHorizontal();
+
+            EditorGUI.indentLevel--;
+        }
+
+        static string GetVRSLVersion()
+        {
+            string path = Application.dataPath;
+            path = path.Replace("Assets", "");
+            path += "Packages" + "\\" + "com.acchosen.vr-stage-lighting" + "\\";
+            path += "Runtime" + "\\" + "VERSION.txt";
+
+            try
+            {
+                StreamReader reader = new StreamReader(path);
+                string versionNum = reader.ReadToEnd();
+                return versionNum;
+            } catch
+            {
+                return null;
+            }
+        }
+
+        private void FindExternal()
+        {
+            FindVRSLController();
+        }
+
+        void LinkVRSL()
+        {
+            TXLUdon.LinkProperty(vrslControllerProperty, FindVRSLController());
+            if (vrslControllerCache)
+            {
+                UdonSharpBehaviour sharp = UdonSharpEditorUtility.GetProxyBehaviour(vrslControllerCache);
+                if (sharp)
+                {
+                    int mode = (int)sharp.GetProgramVariable("DMXMode");
+                    CustomRenderTexture[] crts = null;
+                    if (mode == 0)
+                        crts = (CustomRenderTexture[])sharp.GetProgramVariable("DMX_CRTS_Horizontal");
+                    else if (mode == 1)
+                        crts = (CustomRenderTexture[])sharp.GetProgramVariable("DMX_CRTS_Vertical");
+
+                    vrslDmxRTProperty.objectReferenceValue = _FindRawRT(crts);
+                }
+
+                if (!vrslBlitMatProperty.objectReferenceValue)
+                    vrslBlitMatProperty.objectReferenceValue = AssetDatabase.LoadAssetAtPath<Material>(DEFAULT_VRSL_MAT_PATH);
+
+                vrslEnabledProperty.boolValue = true;
+                if (vrslOffsetScaleProperty.vector3Value.z == 0)
+                    vrslOffsetScaleProperty.vector3Value = new Vector3(1, 1, 1);
+            }
+        }
+
+        private RenderTexture _FindRawRT(CustomRenderTexture[] crts)
+        {
+            if (crts == null)
+                return null;
+
+            for (int i = 0; i < crts.Length; i++)
+            {
+                if (!crts[i])
+                    continue;
+
+                Material mat = crts[i].material;
+                if (!mat)
+                    continue;
+
+                List<string> props = new List<string>(mat.GetPropertyNames(MaterialPropertyType.Texture));
+                if (!props.Contains("_DMXTexture"))
+                    continue;
+
+                Texture tex = mat.GetTexture("_DMXTexture");
+                if (!tex || !(tex is RenderTexture))
+                    continue;
+
+                return (RenderTexture)tex;
+            }
+
+            return null;
+        }
+
+        private UdonBehaviour FindVRSLController()
+        {
+            vrslControllerCache = TXLUdon.FindExternal(vrslControllerCache, "VRSL_LocalUIControlPanel");
+            return vrslControllerCache;
+        }
+
+        private bool IsVRSLOnAnotherManager()
+        {
+            if (managers == null)
+                UpdateManagers();
+
+            foreach (ScreenManager manager in managers)
+            {
+                if (manager == serializedObject.targetObject)
+                    continue;
+
+                if (manager.vrslController)
+                    return true;
+            }
+
+            return false;
+        }
+
         class CrtListDisplay : ReorderableListDisplay
         {
             ScreenManager target;
+            ScreenManagerInspector inspector;
 
             SerializedProperty renderOutCrtListProperty;
             SerializedProperty renderOutMatPropsListProperty;
@@ -450,10 +810,13 @@ namespace Texel
             SerializedProperty renderOutResizeListProperty;
             SerializedProperty renderOutExpandSizeListProperty;
             SerializedProperty renderOutGlobalTexListProperty;
+            SerializedProperty renderOutDoubleBufferAVProListProperty;
+            SerializedProperty renderOutDoubleBufferUnityListProperty;
 
             static string sectionUrl = "https://vrctxl.github.io/Docs/docs/video-txl/configuration/screen-manager#render-textures";
 
             static GUIContent labelHeader = new GUIContent("Render Textures", "CRTs that will be enabled during video playback and recieve view or placeholder data");
+            static GUIContent labelAdvancedOptions = new GUIContent("Show Advanced Options", "Show additional options that would be changed in advanced scenarios.");
             static GUIContent labelCrt = new GUIContent("CRT", "By default, a CRT has been generated in Assets for you, but you can change this for any other CRT.");
             static GUIContent labelCrtSize = new GUIContent("CRT Size", "The resolution of the CRT.  If the resize to video option is enabled, the specified size will be used for placeholder textures.\n\nChanges to this value will change the size of the underlying CRT asset.");
             static GUIContent labelTargetAspect = new GUIContent("Target Aspect Ratio", "The target aspect ratio should be set to the aspect ratio of the OBJECT that this CRT's texture will be applied to, such as a main video screen.  This can be different than the aspect ratio of the CRT or source video.\n\nIf the expand to fit option is enabled, the target aspect ratio will be used to calculate the expansion.\n\nIf the CRT material uses a compatible TXL shader, the aspect ratio property of the underlying material asset will be updated to match this value.");
@@ -462,12 +825,16 @@ namespace Texel
             static GUIContent labelGlobalTex = new GUIContent("Set Global VideoTex", "Sets the _Udon_VideoTex global shader property with this texture.\n\n_Udon_VideoTex is used by some video players as a common property to provide a video texture to avatars.  Avoid trying to set this value from multiple video players at the same time.");
             static GUIContent labelCrtMaterial = new GUIContent("CRT Material", "The material used to render the video data onto the CRT, fetched from the underlying asset.\n\nChanges to this value will change the material on the underlying CRT asset.  Only change this if you know what you're doing.");
             static GUIContent labelCrtPropertyMap = new GUIContent("Property Map", "The property map tells the manager what property names to set on the shader used by the CRT's material.\n\nA property map is required when non-TXL shaders are used.  If you aren't using a custom CRT material, this can be left empty.");
+            static GUIContent labelDoubleBuffer = new GUIContent("Double Buffered", "Whether the CRT should be double-buffered, set on the underlying asset.  If the CRT material supports a double-buffered property in the map, it will be set to match.\n\nDouble buffering can help conceal dropped video frames when using AVPro video sources, at the cost of an extra texture copy.");
+            static GUIContent labelUnity = new GUIContent("Unity");
+            static GUIContent labelAVPro = new GUIContent("AVPro");
 
             static bool expandSection = true;
 
-            public CrtListDisplay(SerializedObject serializedObject, ScreenManager target) : base(serializedObject)
+            public CrtListDisplay(SerializedObject serializedObject, ScreenManager target, ScreenManagerInspector inspector) : base(serializedObject)
             {
                 this.target = target;
+                this.inspector = inspector;
                 header = labelHeader;
 
                 renderOutCrtListProperty = AddSerializedArray(list.serializedProperty);
@@ -477,6 +844,8 @@ namespace Texel
                 renderOutResizeListProperty = AddSerializedArray(serializedObject.FindProperty(nameof(ScreenManager.renderOutResize)));
                 renderOutExpandSizeListProperty = AddSerializedArray(serializedObject.FindProperty(nameof(ScreenManager.renderOutExpandSize)));
                 renderOutGlobalTexListProperty = AddSerializedArray(serializedObject.FindProperty(nameof(ScreenManager.renderOutGlobalTex)));
+                renderOutDoubleBufferAVProListProperty = AddSerializedArray(serializedObject.FindProperty(nameof(ScreenManager.renderOutDoubleBufferAVPro)));
+                renderOutDoubleBufferUnityListProperty = AddSerializedArray(serializedObject.FindProperty(nameof(ScreenManager.renderOutDoubleBufferUnity)));
 
                 list.headerHeight = 1;
             }
@@ -500,6 +869,8 @@ namespace Texel
                 var resizeProp = GetElementSafe(renderOutResizeListProperty, index);
                 var expandSizeProp = GetElementSafe(renderOutExpandSizeListProperty, index);
                 var globalTexProp = GetElementSafe(renderOutGlobalTexListProperty, index);
+                var doubleBufferAVPro = GetElementSafe(renderOutDoubleBufferAVProListProperty, index);
+                var doubleBufferUnity = GetElementSafe(renderOutDoubleBufferUnityListProperty, index);
 
                 InitRect(ref rect);
 
@@ -525,24 +896,48 @@ namespace Texel
                 if (resizeProp.boolValue)
                     DrawToggle(ref rect, 2, labelExpandSize, expandSizeProp);
 
-                Material newMat = DrawObjectField(ref rect, 1, labelCrtMaterial, crt.material, false);
-                if (newMat != crt.material)
-                    crt.material = newMat;
+                if (_showCrtAdvanced)
+                {
+                    Material newMat = DrawObjectField(ref rect, 1, labelCrtMaterial, crt.material, false);
+                    if (newMat != crt.material)
+                        crt.material = newMat;
+                }
 
                 Material mat = crt.material;
+                bool compatMat = false;
+                EditorScreenPropertyMap emap = null;
+                List<string> propNames = new List<string>();
+
                 if (mat != null)
                 {
-                    DrawObjectField(ref rect, 2, labelCrtPropertyMap, matMapProp);
+                    propNames.AddRange(mat.GetPropertyNames(MaterialPropertyType.Int));
+                    propNames.AddRange(mat.GetPropertyNames(MaterialPropertyType.Float));
+
+                    if (_showCrtAdvanced)
+                        DrawObjectField(ref rect, 2, labelCrtPropertyMap, matMapProp);
 
                     // Force earlier target aspect value into material if it's a compatible TXL shader that supports it
-                    bool compat = compatMaterialShader(mat);
-                    if (compat)
+                    compatMat = compatMaterialShader(mat);
+                    if (compatMat)
                     {
-                        float aspect = mat.GetFloat("_AspectRatio");
-                        if (aspect != targetAspectProp.floatValue)
-                            mat.SetFloat("_AspectRatio", targetAspectProp.floatValue);
+                        emap = EditorScreenPropertyMap.FromPropertyMap((ScreenPropertyMap)matMapProp.objectReferenceValue);
+                        if (emap == null)
+                            emap = EditorScreenPropertyMap.FromMaterial(mat);
+
+                        if (emap != null && emap.targetAspectRatio != "" && propNames.Contains(emap.targetAspectRatio))
+                        {
+                            float aspect = mat.GetFloat(emap.targetAspectRatio);
+                            if (aspect != targetAspectProp.floatValue)
+                                mat.SetFloat(emap.targetAspectRatio, targetAspectProp.floatValue);
+                        }
                     }
                 }
+
+                if (_showCrtAdvanced)
+                    DrawToggle2(ref rect, 1, labelDoubleBuffer, labelAVPro, doubleBufferAVPro, labelUnity, doubleBufferUnity);
+
+                if (compatMat && emap != null && emap.doubleBuffered != "" && propNames.Contains(emap.doubleBuffered))
+                    mat.SetInt(emap.doubleBuffered, crt.doubleBuffered ? 1 : 0);
 
                 DrawToggle(ref rect, 1, labelGlobalTex, globalTexProp);
             }
@@ -555,12 +950,14 @@ namespace Texel
                 CustomRenderTexture crt = (CustomRenderTexture)crtProp.objectReferenceValue;
                 if (crt != null)
                 {
-                    lineCount += 5;
+                    lineCount += 4;
+                    if (_showCrtAdvanced)
+                        lineCount += 2;
 
                     if (renderOutResizeListProperty.GetArrayElementAtIndex(index).boolValue)
                         lineCount += 1;
 
-                    if (crt.material != null)
+                    if (_showCrtAdvanced && crt.material != null)
                         lineCount += 1;
                 }
 
@@ -571,15 +968,29 @@ namespace Texel
             {
                 base.OnAdd(list);
 
-                int index = list.index;
-                CustomRenderTexture crt = CreateCRTCopy();
+                AddCRT(list.index, CreateCRTCopy());
+            }
 
+            void AddCRT(int index, CustomRenderTexture crt)
+            {
                 renderOutCrtListProperty.GetArrayElementAtIndex(index).objectReferenceValue = crt;
                 renderOutSizeListProperty.GetArrayElementAtIndex(index).vector2IntValue = new Vector2Int(crt.width, crt.height);
                 if (compatMaterialShader(crt))
-                    renderOutTargetAspectListProperty.GetArrayElementAtIndex(index).floatValue = crt.material.GetFloat("_AspectRatio");
+                {
+                    EditorScreenPropertyMap emap = EditorScreenPropertyMap.FromMaterial(crt.material);
+                    if (emap != null && emap.targetAspectRatio != "")
+                        renderOutTargetAspectListProperty.GetArrayElementAtIndex(index).floatValue = crt.material.GetFloat(emap.targetAspectRatio);
+                }
 
+                renderOutDoubleBufferAVProListProperty.GetArrayElementAtIndex(index).boolValue = true;
                 renderOutGlobalTexListProperty.GetArrayElementAtIndex(index).boolValue = (index == 0);
+            }
+
+            public void AddDefault(CustomRenderTexture crt)
+            {
+                base.OnAdd(list);
+
+                AddCRT(list.index, crt);
             }
 
             public void Section()
@@ -588,12 +999,42 @@ namespace Texel
                 {
                     if (renderOutCrtListProperty.arraySize == 0)
                     {
-                        TXLEditor.IndentedHelpBox("Custom Render Textures, which can be used like other Render Textures, are the easiest way to supply a video texture to different materials/shaders in your scene.  This includes feeding systems like LTCGI and AreaLit.  Add one or more CRTs to the list to get started.\n\nIf you just want to display a screen, consider using the other override options below, which will have better performance and display your video content at native resolution.", MessageType.Info);
+                        bool defaultState = InDefaultState(target);
+                        // If you just want to display a screen, consider using the other override options below, which will have better performance and display your video content at native resolution.
+                        string info = "Due to ongoing issues with AVPro dropping video frames, a CRT setup is recommended over other update methods.";
+                        if (defaultState)
+                            info += "  Use the one-click button below to convert the video player's default screen setup to use a CRT.  This will generate the necessary CRT resources, as well as a shared material that will be assigned to the screen.";
+
+                        TXLEditor.IndentedHelpBox("Custom Render Textures (CRTs), which can be used like other Render Textures, are the easiest way to supply a video texture to different materials/shaders in your scene.  This includes feeding systems like LTCGI and AreaLit.  Add one or more CRTs to the list to get started.", MessageType.Info);
+                        TXLEditor.IndentedHelpBox(info, MessageType.Warning);
                         EditorGUILayout.Space();
+
+                        if (defaultState)
+                        {
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Space(15);
+                            if (GUILayout.Button("Convert to CRT Setup"))
+                                inspector.ConvertDefaultToCRT();
+                            
+                            GUILayout.EndHorizontal();
+                            EditorGUILayout.Space();
+                        }
+                    } else
+                    {
+                        EditorGUI.indentLevel += 1;
+                        _showCrtAdvanced = EditorGUILayout.Toggle(labelAdvancedOptions, _showCrtAdvanced);
+                        EditorGUILayout.Space();
+                        EditorGUI.indentLevel -= 1;
                     }
 
                     Draw(1);
                     EditorGUILayout.Space(20);
+                }
+
+                if (renderOutCrtListProperty.arraySize != 0)
+                {
+                    TXLEditor.IndentedHelpBox("Use the CRT objects like regular textures in any of your own materials, and apply those materials to your screens or other video surfaces.", MessageType.Info);
+                    EditorGUILayout.Space();
                 }
 
                 bool packageCrtDetected = false;
@@ -753,6 +1194,22 @@ namespace Texel
                 propPropertyListProperty = AddSerializedArray(serializedObject.FindProperty(nameof(ScreenManager.propPropertyList)));
 
                 list.headerHeight = 1;
+            }
+
+            public void Clear()
+            {
+                serializedObject.FindProperty(nameof(ScreenManager.propMeshList)).ClearArray();
+                serializedObject.FindProperty(nameof(ScreenManager.propMaterialOverrideList)).ClearArray();
+                serializedObject.FindProperty(nameof(ScreenManager.propMaterialIndexList)).ClearArray();
+                serializedObject.FindProperty(nameof(ScreenManager.propPropertyList)).ClearArray();
+            }
+
+            public MeshRenderer GetRenderer(int index)
+            {
+                if (index < 0 || index >= propRenderListProperty.arraySize)
+                    return null;
+
+                return (MeshRenderer)propRenderListProperty.GetArrayElementAtIndex(index).objectReferenceValue;
             }
 
             protected override SerializedProperty mainListProperty(SerializedObject serializedObject)
@@ -1080,6 +1537,7 @@ namespace Texel
             UpdateEditorCRT(manager);
             UpdateEditorSharedMaterials(manager);
             UpdateEditorMaterialBlocks(manager);
+            UpdateEditorVRSL(manager);
         }
 
         private static void UpdateEditorSharedMaterials(ScreenManager manager)
@@ -1163,8 +1621,6 @@ namespace Texel
 
                     if (manager.renderOutGlobalTex[i])
                     {
-                        Debug.Log($"Set Global Tex {crt} {crt.IsCreated()}");
-
                         if (!videoTexRT)
                             videoTexRT = new RenderTexture(crt);
                         else
@@ -1181,6 +1637,30 @@ namespace Texel
                     }
                 }
             }
+        }
+
+        private static void UpdateEditorVRSL(ScreenManager manager)
+        {
+            if (!manager || !manager.vrslDmxRT || !manager.vrslBlitMat || !vrslEditorBlitMat)
+                return;
+
+            Texture2D logoTex = null;
+            if (manager.editorTexture is Texture2D)
+                logoTex = (Texture2D)manager.editorTexture;
+            if (logoTex == null && manager.logoTexture is Texture2D)
+                logoTex = (Texture2D)manager.logoTexture;
+
+            bool horizontal = manager.vrslDmxRT.height == 960;
+
+            vrslEditorBlitMat.SetTexture("_MainTex", logoTex);
+            vrslEditorBlitMat.SetVector("_OffsetScale", new Vector4(manager.vrslOffsetScale.x, manager.vrslOffsetScale.y, manager.vrslOffsetScale.z, manager.vrslOffsetScale.z));
+            vrslEditorBlitMat.SetInt("_Horizontal", horizontal ? 1 : 0);
+            vrslEditorBlitMat.SetInt("_DoubleBuffered", 0);
+            vrslEditorBlitMat.SetInt("_ApplyGamma", 0);
+            vrslEditorBlitMat.SetInt("_FlipY", 0);
+            vrslEditorBlitMat.SetFloat("_AspectRatio", manager.vrslSourceAspectRatio);
+
+            Graphics.Blit(logoTex, manager.vrslDmxRT, vrslEditorBlitMat);
         }
 
         private void UpdateSharedMaterial(Material mat, ScreenPropertyMap map)
@@ -1213,9 +1693,12 @@ namespace Texel
                 if (emap.invertY != "")
                     mat.SetInt(emap.invertY, 0);
 
-                SyncPlayer videoPlayer = (SyncPlayer)manager.videoPlayer;
-                if (emap.screenFit != "" && videoPlayer)
-                    mat.SetInt(emap.screenFit, (int)videoPlayer.defaultScreenFit);
+                if (manager.videoPlayer is SyncPlayer)
+                {
+                    SyncPlayer videoPlayer = (SyncPlayer)manager.videoPlayer;
+                    if (emap.screenFit != "" && videoPlayer)
+                        mat.SetInt(emap.screenFit, (int)videoPlayer.defaultScreenFit);
+                }
 
                 bool overrideAspectRatio = manager.overrideAspectRatio;
                 float aspectRatio = manager.aspectRatio;
@@ -1224,7 +1707,7 @@ namespace Texel
             }
         }
 
-        private static CustomRenderTexture CreateCRTCopy()
+        private static string GetAssetBasePath()
         {
             string destBasePath = "Assets/Texel/Generated/RenderOut";
             Scene scene = SceneManager.GetActiveScene();
@@ -1241,7 +1724,19 @@ namespace Texel
                 return null;
             }
 
-            int nextId = FindNextCrtId(destBasePath);
+            return destBasePath;
+        }
+
+        private static CustomRenderTexture CreateCRTCopy(int id = -1)
+        {
+            string destBasePath = GetAssetBasePath();
+            if (destBasePath == null)
+                return null;
+
+            int nextId = id;
+            if (nextId == -1)
+                nextId = FindNextCrtId(destBasePath);
+
             if (nextId < 0)
             {
                 Debug.LogError("Could not find unused ID value to generate new CRT asset");
@@ -1268,6 +1763,29 @@ namespace Texel
             crt.material = mat;
 
             return crt;
+        }
+
+        private static Material CreateStandardMaterialCopy(int id = -1)
+        {
+            string destBasePath = GetAssetBasePath();
+            if (destBasePath == null)
+                return null;
+
+            if (id == -1)
+                id = UnityEngine.Random.Range(0, 999);
+
+            string newMatPath = $"{destBasePath}/VideoTXLScreen-{id}.mat";
+            Material mat = (Material)AssetDatabase.LoadAssetAtPath(newMatPath, typeof(Material));
+            if (mat)
+                return mat;
+
+            if (!AssetDatabase.CopyAsset(DEFAULT_SCREEN_MAT_PATH, newMatPath))
+            {
+                Debug.LogError($"Could not copy screen material to: {newMatPath}");
+                return null;
+            }
+
+            return (Material)AssetDatabase.LoadAssetAtPath(newMatPath, typeof(Material));
         }
 
         private static bool EnsureFolderExists(string path)
@@ -1399,6 +1917,51 @@ namespace Texel
                 map.name = "Property Map";
 
             return map;
+        }
+
+        private static bool InDefaultState(ScreenManager manager)
+        {
+            if (manager.renderOutCrt != null && manager.renderOutCrt.Length != 0)
+                return false;
+            if (manager.materialPropertyList != null && manager.materialPropertyList.Length != 0)
+                return false;
+            if (manager.propMeshList == null || manager.propMeshList.Length == 0)
+                return false;
+
+            return true;
+        }
+
+        public void ConvertDefaultToCRT()
+        {
+            string basePath = GetAssetBasePath();
+            int crtId = FindNextCrtId(basePath);
+            CustomRenderTexture crt = CreateCRTCopy(crtId);
+            Material mat = CreateStandardMaterialCopy(crtId);
+            mat.SetTexture("_MainTex", crt);
+            mat.SetTexture("_EmissionMap", crt);
+
+            crtList.AddDefault(crt);
+
+            MeshRenderer mesh = propBlockList.GetRenderer(0);
+            if (mesh != null)
+            {
+                Material[] mats = mesh.sharedMaterials;
+                int matIndex = 0;
+
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    if (compatMaterialShader(mats[i]))
+                    {
+                        matIndex = i;
+                        break;
+                    }
+                }
+
+                mats[matIndex] = mat;
+                mesh.sharedMaterials = mats;
+            }
+
+            propBlockList.Clear();
         }
 
         private void UpgradeLegacyCrtEntry()

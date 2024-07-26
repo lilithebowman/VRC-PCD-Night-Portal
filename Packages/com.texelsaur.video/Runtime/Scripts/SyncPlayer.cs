@@ -109,7 +109,6 @@ namespace Texel
         bool _heldVideoReady = false;
         bool _skipAdvanceNextTrack = false;
         float _lastSyncTime;
-        float _playStartTime = 0;
         bool _overrideLock = false;
         bool _suppressSourceUpdate = false;
         public bool _videoReady = false;
@@ -803,8 +802,11 @@ namespace Texel
         bool _IsAutoVideoSource(string urlStr)
         {
             // Assume youtube is video-based (but it could be a livestream...)
+
+            // NB: As of 2024-07-25 Youtube no longer returns compatible codecs for Unity video.  Unless workaround is found,
+            // Youtube videos must now be loaded on AVPro sources.
             if (urlStr.Contains("youtube.com/watch") || urlStr.Contains("youtu.be/"))
-                return true;
+                return false;
 
             // VRCDN sources are always stream
             if (urlStr.Contains("vrcdn.live"))
@@ -881,7 +883,7 @@ namespace Texel
             if (IsQuest && _syncQuestUrl != null && _syncQuestUrl != VRCUrl.Empty && _syncQuestUrl.Get().Trim() != "")
             {
                 url = _syncQuestUrl;
-                DebugLog("Loading Quest URL variant");
+                DebugLog($"Loading Quest URL variant: {url}");
             }
 
             _preResolvedUrl = url;
@@ -890,7 +892,7 @@ namespace Texel
             {
                 url = urlRemapper._Remap(url);
                 if (Utilities.IsValid(url) && _syncUrl.Get() != url.Get())
-                    DebugLog("Remapped URL");
+                    DebugLog($"Remapped URL: {url}");
             }
 
             _resolvedUrl = url;
@@ -909,7 +911,6 @@ namespace Texel
             videoMux._VideoStop();
             _videoTargetTime = 0;
             _pendingLoadTime = 0;
-            _playStartTime = 0;
             _videoReady = false;
 
             if (Networking.IsOwner(gameObject))
@@ -926,6 +927,13 @@ namespace Texel
         public void _OnVideoReady()
         {
             DebugTrace("Event OnVideoReady");
+
+            if (!_inSustainZone)
+            {
+                videoMux._VideoStop();
+                _UpdatePlayerState(VIDEO_STATE_STOPPED);
+                return;
+            }
 
             float position = videoMux.VideoTime;
             float duration = videoMux.VideoDuration;
@@ -980,14 +988,14 @@ namespace Texel
 
                 _UpdatePlayerState(VIDEO_STATE_PLAYING);
                 _UpdatePlayerPaused(false);
-                _playStartTime = Time.time;
 
                 _syncOwnerPlaying = true;
                 _syncOwnerPaused = false;
                 RequestSerialization();
 
                 //if (!paused)
-                videoMux._VideoSetTime(_videoTargetTime);
+                if (seekableSource)
+                    videoMux._VideoSetTime(_videoTargetTime);
 
                 SyncVideoImmediate();
             }
@@ -1004,7 +1012,6 @@ namespace Texel
                 else
                 {
                     _UpdatePlayerState(VIDEO_STATE_PLAYING);
-                    _playStartTime = Time.time;
 
                     SyncVideoImmediate();
                 }
@@ -1016,11 +1023,6 @@ namespace Texel
             _videoReady = false;
 
             DebugTrace("Event OnVideoEnd");
-            if (!seekableSource && Time.time - _playStartTime < 10)
-            {
-                Debug.Log("Video end encountered at start of stream, ignoring");
-                return;
-            }
 
             seekableSource = false;
 
@@ -1710,7 +1712,6 @@ namespace Texel
             debugState._SetValue("holdReadyState", _holdReadyState.ToString());
             debugState._SetValue("heldVideoReady", _heldVideoReady.ToString());
             debugState._SetValue("lastSyncTime", _lastSyncTime.ToString());
-            debugState._SetValue("playStartTime", _playStartTime.ToString());
             debugState._SetValue("pendingLoadTime", _pendingLoadTime.ToString());
             debugState._SetValue("seekableSource", seekableSource.ToString());
             debugState._SetValue("trackDuration", trackDuration.ToString());

@@ -123,6 +123,11 @@ namespace Texel
             return prop;
         }
 
+        public int Count
+        {
+            get { return list.count; }
+        }
+
         public void Draw(int indentLevel)
         {
             Rect listRect = GUILayoutUtility.GetRect(0, list.GetHeight() + 16, GUILayout.ExpandWidth(true));
@@ -139,11 +144,39 @@ namespace Texel
             return fieldRect;
         }
 
+        protected bool DrawToggle(ref Rect rect, int indentLevel, GUIContent label, bool value)
+        {
+            Rect lineRect = Indent(ref rect, indentLevel);
+            Rect fieldRect = DrawPrefix(lineRect, indentLevel, label);
+            return EditorGUI.Toggle(fieldRect, value);
+        }
+
         protected void DrawToggle(ref Rect rect, int indentLevel, GUIContent label, SerializedProperty prop)
         {
             Rect lineRect = Indent(ref rect, indentLevel);
             Rect fieldRect = DrawPrefix(lineRect, indentLevel, label);
             prop.boolValue = EditorGUI.Toggle(fieldRect, prop.boolValue);
+        }
+
+        protected void DrawToggle2(ref Rect rect, int indentLevel, GUIContent label, GUIContent label1, SerializedProperty prop1, GUIContent label2, SerializedProperty prop2)
+        {
+            Rect lineRect = Indent(ref rect, indentLevel);
+            Rect fieldRect = DrawPrefix(lineRect, indentLevel, label);
+
+            Rect field1 = fieldRect;
+            field1.width /= 2;
+            Rect field2 = field1;
+            field2.x = field1.xMax;
+
+            prop1.boolValue = EditorGUI.Toggle(field1, prop1.boolValue);
+            field1.x += 20;
+            field1.width -= 20;
+            EditorGUI.LabelField(field1, label1);
+
+            prop2.boolValue = EditorGUI.Toggle(field2, prop2.boolValue);
+            field2.x += 20;
+            field2.width -= 20;
+            EditorGUI.LabelField(field2, label2);
         }
 
         protected Vector2Int DrawSizeField(ref Rect rect, int indentLevel, GUIContent label, Vector2Int size)

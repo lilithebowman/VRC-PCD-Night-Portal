@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: AccessControl
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 9365d0bbad3c3f54ca57ba67fbd330a9,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 38a1fed68180166489f19b96c486235f,
     type: 2}
   udonAssembly: 
   assemblyError: 

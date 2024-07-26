@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: UrlRemapper
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 272372dbb08cc9e4c85e223a5c34e5b7,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: dc08c31708500b24686f590ce89a608b,
     type: 2}
   udonAssembly: 
   assemblyError: 
