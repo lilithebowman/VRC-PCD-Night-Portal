@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1920
     height: 989
   m_ShowMode: 4
-  m_Title: Scene
+  m_Title: VRChat SDK
   m_RootView: {fileID: 6}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 103
+  controlID: 107
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -97,8 +97,8 @@ MonoBehaviour:
     y: 0
     width: 361
     height: 719
-  m_MinSize: {x: 201, y: 221}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 19}
   m_Panes:
   - {fileID: 19}
@@ -114,7 +114,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 1
   m_Script: {fileID: 12006, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: ConsoleWindow
+  m_Name: ProjectBrowser
   m_EditorClassIdentifier: 
   m_Children: []
   m_Position:
@@ -123,15 +123,15 @@ MonoBehaviour:
     y: 719
     width: 1466
     height: 220
-  m_MinSize: {x: 101, y: 121}
-  m_MaxSize: {x: 4001, y: 4021}
-  m_ActualView: {fileID: 22}
+  m_MinSize: {x: 231, y: 271}
+  m_MaxSize: {x: 10001, y: 10021}
+  m_ActualView: {fileID: 17}
   m_Panes:
   - {fileID: 17}
   - {fileID: 22}
   - {fileID: 13}
-  m_Selected: 1
-  m_LastSelected: 0
+  m_Selected: 0
+  m_LastSelected: 1
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -227,7 +227,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 28
+  controlID: 64
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -252,7 +252,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 50}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 29
+  controlID: 65
 --- !u!114 &11
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -504,7 +504,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Textures
+    - Packages/com.texelsaur.portal/Runtime/RenderTextures
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -512,16 +512,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Textures
+  - Packages/com.texelsaur.portal/Runtime/RenderTextures
   m_LastFoldersGridSize: -1
-  m_LastProjectPath: C:\Source\VRC-PCD-Night-Portal
+  m_LastProjectPath: D:\Source\VRC-PCD-Night-Portal
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 213}
-    m_SelectedIDs: fa850100
-    m_LastClickedID: 99834
-    m_ExpandedIDs: 00000000007e00005063010052630100f28501003291010000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 559}
+    m_SelectedIDs: ee800100
+    m_LastClickedID: 98542
+    m_ExpandedIDs: 00000000f07d0000e8780100ea780100be800100e880010000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -549,7 +549,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000007e000050630100526301005463010056630100
+    m_ExpandedIDs: 00000000f07d0000e6780100e8780100ea780100
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -693,7 +693,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 506ffdffa66ffdffcc8dfdff2eccfdff88ccfdff18ebfdffe8b1feffd2c7feff90610100
+      m_ExpandedIDs: 1ecefdff76cefdffa0ecfdffa401fefffc01feff8a20feffbe76feff6a95feff7695feff9495feff4296feff4696feffd2a4fefffea6feff88a7feff90a7feff9aa7feffa4a7feffb0a7feffd8a7fefff0abfeffa8750100
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1050,6 +1050,19 @@ MonoBehaviour:
       layout: 4
       size: {x: 0, y: 0}
       sizeOverriden: 0
+    - dockPosition: 1
+      containerId: overlay-container--right
+      floating: 0
+      collapsed: 0
+      displayed: 1
+      snapOffset: {x: 48, y: 48}
+      snapOffsetDelta: {x: 0, y: 0}
+      snapCorner: 0
+      id: UnityEditor.SceneViewCameraOverlay
+      index: 10
+      layout: 4
+      size: {x: 0, y: 0}
+      sizeOverriden: 0
     m_OverlaysVisible: 1
   m_WindowGUID: b11e3aea8bc183447aff6cb6ca07df13
   m_Gizmos: 1
@@ -1061,9 +1074,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: -4.9632754, y: 5.420917, z: -2.0791483}
+    m_Target: {x: 0.91056424, y: 2.51063, z: -0.56460536}
     speed: 2
-    m_Value: {x: -4.9632754, y: 5.420917, z: -2.0791483}
+    m_Value: {x: 0.91056424, y: 2.51063, z: -0.56460536}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1109,13 +1122,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.00057141937, y: -0.9993865, z: -0.028182453, w: -0.022514008}
+    m_Target: {x: -0.03177562, y: -0.042559337, z: 0.0013507714, w: -0.9985981}
     speed: 2
-    m_Value: {x: 0.0006136694, y: -0.9993142, z: -0.02818051, w: -0.024012163}
+    m_Value: {x: -0.03177529, y: -0.04255889, z: 0.0013507572, w: -0.9985876}
   m_Size:
-    m_Target: 0.1563562
+    m_Target: 0.8660285
     speed: 2
-    m_Value: 0.1563562
+    m_Value: 0.8660285
   m_Ortho:
     m_Target: 0
     speed: 2
